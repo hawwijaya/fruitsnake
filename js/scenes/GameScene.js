@@ -188,7 +188,8 @@ class GameScene extends Phaser.Scene {
     }
     
     spawnNewApple() {
-        if (this.applesRemaining <= 0 || !this.isGameActive) return;
+        // Don't spawn if apples remaining is zero, game is not active, or an apple already exists
+        if (this.applesRemaining <= 0 || !this.isGameActive || this.apple) return;
         
         // Decrease apples remaining
         this.applesRemaining--;
@@ -221,6 +222,8 @@ class GameScene extends Phaser.Scene {
     
     spawnPredators() {
         if (!this.apple || !this.apple.active || !this.isGameActive) return;
+        // Also don't spawn if predators already exist
+        if (this.snake || this.worm) return;
         
         // Calculate positions off-screen to spawn the snake and worm
         const { width, height } = this.cameras.main;
@@ -573,53 +576,92 @@ class GameScene extends Phaser.Scene {
     checkGameStatus() {
         // Check if we've used all apples
         if (this.applesRemaining <= 0 && !this.apple) {
-            // Play game over sound
-            this.sound.play('gameover', { volume: 0.6 });
-            
-            // End the game after a delay
-            this.time.delayedCall(1500, () => {
-                this.isGameActive = false;
-                this.scene.start('GameOverScene', { score: this.score });
-            });
+            // Ensure game is still active before ending
+            if (this.isGameActive) {
+                // Play game over sound
+                this.sound.play('gameover', { volume: 0.6 });
+                
+                // End the game after a delay
+                this.time.delayedCall(1500, () => {
+                    this.isGameActive = false;
+                    this.scene.start('GameOverScene', { score: this.score });
+                });
+            }
+        }
+    }
+    
+    checkGameCompletion() {
+        // Additional check for game completion - if we've used all apples and player delivered all possible apples
+        if (this.applesRemaining <= 0 && !this.apple && this.score === this.gameConstants.TOTAL_APPLES) {
+            // Game won - all apples collected successfully
+            if (this.isGameActive) {
+                // Play game over sound
+                this.sound.play('gameover', { volume: 0.6 });
+                
+                // End the game after a delay
+                this.time.delayedCall(1500, () => {
+                    this.isGameActive = false;
+                    this.scene.start('GameOverScene', { score: this.score, gameWon: true });
+                });
+            }
+        } else if (this.applesRemaining <= 0 && !this.apple) {
+            // Check if no more apples and none in play - game over
+            this.checkGameStatus();
         }
     }
     
     update(time, delta) {
-        // Handle squirrel movement using keyboard
-        if (this.squirrel) {
-            this.squirrel.handleInput(this.cursors);
-            this.squirrel.update();
-        }
+        // Skip update if game is no longer active
+        if (!this.isGameActive) return;
         
-        // Update apple if active
-        if (this.apple && this.apple.isActive) {
-            this.apple.update();
-        }
-        
-        // Update predators
-        if (this.snake) {
-            this.snake.update(time);
-        }
-        
-        if (this.worm) {
-            this.worm.update(time);
-        }
-        
-        // If squirrel has apple, update predator targets
-        if (this.squirrel && this.squirrel.hasApple) {
+        try {
+            // Handle squirrel movement using keyboard
+            if (this.squirrel) {
+                this.squirrel.handleInput(this.cursors);
+                this.squirrel.update();
+            }
+            
+            // Update apple if active
+            if (this.apple && this.apple.isActive) {
+                this.apple.update();
+            }
+            
+            // Update predators
             if (this.snake) {
-                this.snake.setTarget(this.squirrel);
+                this.snake.update(time);
             }
+            
             if (this.worm) {
-                this.worm.setTarget(this.squirrel);
+                this.worm.update(time);
             }
-        } else if (this.apple && this.apple.isActive) {
-            // If apple is on ground, target it
-            if (this.snake) {
-                this.snake.setTarget(this.apple);
+            
+            // If squirrel has apple, update predator targets
+            if (this.squirrel && this.squirrel.hasApple) {
+                if (this.snake) {
+                    this.snake.setTarget(this.squirrel);
+                }
+                if (this.worm) {
+                    this.worm.setTarget(this.squirrel);
+                }
+            } else if (this.apple && this.apple.isActive) {
+                // If apple is on ground, target it
+                if (this.snake) {
+                    this.snake.setTarget(this.apple);
+                }
+                if (this.worm) {
+                    this.worm.setTarget(this.apple);
+                }
             }
-            if (this.worm) {
-                this.worm.setTarget(this.apple);
+            
+            // Double check game over condition in update loop
+            this.checkGameCompletion();
+        } catch (error) {
+            console.error("Error in game update loop:", error);
+            // Attempt recovery to prevent complete freeze
+            if (!this.recoveryAttempted) {
+                this.recoveryAttempted = true;
+                // Try to reset this round
+                this.cleanupCurrentRound();
             }
         }
     }
