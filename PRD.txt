@@ -1,6 +1,6 @@
-Product Requirements Document: Fruit Snake Game
+Product Requirements Document: Fruit Gatherer Game
 Introduction and Overview
-Fruit Snake is a web-based game where players navigate apples from a tree to a basket while avoiding snakes. The game features colorful graphics, engaging sound effects, and increasing difficulty as the player progresses.
+Fruit Gatherer is a web-based game where players control a squirrel to fetch fruits from a tree and bring them to a basket while avoiding predators. The game features a top-down perspective, colorful graphics, engaging sound effects, and increasing difficulty as the player progresses.
 
 Technical Requirements
 Technology Stack
@@ -9,34 +9,44 @@ I recommend using JavaScript with the Phaser.js framework for this game. Phaser 
 Visual Requirements
 Minimum 256 color palette (8-bit color depth)
 Responsive design to work on various screen sizes
-Smooth animations for apple dropping, snake movement
-Clear visual distinction between game elements (tree, apples, snake, basket)
+Smooth animations for fruit dropping, squirrel movement, and predator behaviors
+Clear visual distinction between game elements (tree, fruits, squirrel, basket, snake, worm)
+Perspective: 70-degree angle from the ground (top-down but with perspective)
+
 Game Mechanics
 Game Setup
-A garden scene with grass as the background
-An apple tree and a basket are randomly positioned on screen
+A garden scene with grass viewed from a 70-degree angle looking down from the sky
+An fruit tree and a basket are randomly positioned on screen
 The tree and basket must be at least 75% of the screen size apart
-Each game starts with 10 apples available
+Each game starts with 10 fruits available
+
 Core Gameplay
-An apple drops from the tree near the trunk
-The player uses keyboard movement keys (arrows/WASD) to navigate the apple
-A snake spawns and tries to eat the apple (AI-controlled)
-The snake moves slightly slower than the maximum apple speed
-If the apple reaches the basket, the player scores a point
-If the snake eats the apple, it grows longer
-A new apple appears when the previous one is either eaten or enters the basket
-The game ends when all 10 apples are used (either collected or eaten)
+A fruit drops from the tree near the trunk
+A squirrel appears (player-controlled) who must fetch the fruit
+The player uses keyboard movement keys (arrows/WASD) to navigate the squirrel to the fruit
+Once the squirrel touches the fruit, it picks it up and must carry it to the basket
+A snake and a worm spawn and try to steal the fruit (AI-controlled)
+The predators move slightly slower than the maximum squirrel speed
+The snake grows longer each time it successfully steals a fruit
+If the squirrel delivers the fruit to the basket, the player scores a point
+If either predator catches the squirrel while carrying the fruit, the fruit is lost
+A new fruit appears when the previous one is either delivered, stolen, or lost
+The game ends when all 10 fruits are used
+
 Sound Effects
-Apple dropping sound
-Apple collection (basket) sound
-Snake movement sound
-Snake eating apple sound
+Fruit dropping sound
+Fruit collection (squirrel pickup) sound
+Fruit delivery (basket) sound
+Squirrel movement sound
+Snake and worm movement sounds
+Predator stealing fruit sound
 Game over sound
 Background ambient garden sounds
+
 Game Flow
 Start screen with game title and "Start" button
 Gameplay screen showing:
-Current score (apples collected)
-Apples remaining
-Game area with tree, basket, apple, and snake
+Current score (fruits delivered)
+Fruits remaining
+Game area with tree, basket, fruit, squirrel, snake and worm
 Game over screen showing final score and "Play Again" button

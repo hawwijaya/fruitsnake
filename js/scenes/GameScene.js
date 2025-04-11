@@ -9,8 +9,9 @@ class GameScene extends Phaser.Scene {
         this.gameConstants = {
             TOTAL_APPLES: 10, // Total apples per game as per PRD
             MIN_DISTANCE_RATIO: 0.75, // Min distance between tree and basket (75% of screen)
-            SNAKE_SPEED_FACTOR: 0.9, // Snake slightly slower than apple max speed
-            APPLE_MOVE_SPEED: 200 // Apple movement speed
+            SNAKE_SPEED_FACTOR: 0.9, // Snake slightly slower than squirrel max speed
+            WORM_SPEED_FACTOR: 0.7, // Worm even slower than snake
+            SQUIRREL_SPEED: 200 // Squirrel movement speed
         };
         
         // Game state variables
@@ -21,11 +22,11 @@ class GameScene extends Phaser.Scene {
         // Snake state tracking - persist between apples
         this.snakeProperties = {
             segmentCount: 3, // Start with 3 segments
-            moveSpeed: this.gameConstants.APPLE_MOVE_SPEED * this.gameConstants.SNAKE_SPEED_FACTOR,
+            moveSpeed: this.gameConstants.SQUIRREL_SPEED * this.gameConstants.SNAKE_SPEED_FACTOR,
             applesEaten: 0
         };
         
-        // Add garden background - Check if background image exists, otherwise create one
+        // Add garden background with 70-degree view
         if (this.textures.exists('background')) {
             this.add.image(0, 0, 'background').setOrigin(0).setDisplaySize(this.cameras.main.width, this.cameras.main.height);
         } else {
@@ -52,46 +53,51 @@ class GameScene extends Phaser.Scene {
             console.warn("Ambient sound not available");
         }
         
+        // Create the player-controlled squirrel
+        const startX = this.cameras.main.width / 2;
+        const startY = this.cameras.main.height / 2;
+        this.squirrel = new Squirrel(this, startX, startY);
+        
         // Spawn the first apple
-        this.spawnNewApple();
+        this.time.delayedCall(1000, this.spawnNewApple, [], this);
     }
     
     createGardenBackground() {
         const { width, height } = this.cameras.main;
         
-        // Create a garden-like background with grass and details
+        // Create a garden-like background with grass from 70-degree view
         const background = this.add.graphics();
         
-        // Sky gradient (light blue to lighter blue)
-        background.fillGradientStyle(0x87CEEB, 0x87CEEB, 0xADD8E6, 0xADD8E6, 1);
-        background.fillRect(0, 0, width, height * 0.6);
+        // Sky gradient (light blue to lighter blue) - smaller in 70-degree view
+        background.fillGradientStyle(0x70B8FF, 0x70B8FF, 0xC0E0FF, 0xC0E0FF, 1);
+        background.fillRect(0, 0, width, height * 0.3);
         
         // Grass gradient (dark green to light green)
         background.fillGradientStyle(0x458B00, 0x458B00, 0x66BB66, 0x66BB66, 1);
-        background.fillRect(0, height * 0.6, width, height * 0.4);
+        background.fillRect(0, height * 0.3, width, height * 0.7);
         
         // Add some texture to the grass
-        for (let i = 0; i < 200; i++) {
+        for (let i = 0; i < 300; i++) {
             const x = Phaser.Math.Between(0, width);
-            const y = Phaser.Math.Between(height * 0.6, height);
-            const size = Phaser.Math.Between(2, 5);
+            const y = Phaser.Math.Between(height * 0.3, height);
+            const size = Phaser.Math.Between(2, 4);
             
             // Draw small grass tufts
-            background.fillStyle(0x44CC44, 1);
-            background.fillRect(x, y - size, size, size * 2);
+            background.fillStyle(0x44CC44, 0.6);
+            background.fillCircle(x, y, size);
         }
         
-        // Add a few clouds
+        // Add a few clouds in the sky portion
         for (let i = 0; i < 5; i++) {
             const x = Phaser.Math.Between(width * 0.1, width * 0.9);
-            const y = Phaser.Math.Between(height * 0.1, height * 0.3);
+            const y = Phaser.Math.Between(height * 0.05, height * 0.2);
             const size = Phaser.Math.Between(30, 60);
             
             // Draw cloud puffs
             background.fillStyle(0xFFFFFF, 0.7);
-            background.fillCircle(x, y, size);
-            background.fillCircle(x + size * 0.7, y, size * 0.8);
-            background.fillCircle(x - size * 0.7, y, size * 0.8);
+            background.fillEllipse(x, y, size * 1.5, size * 0.7);
+            background.fillEllipse(x + size * 0.7, y, size * 1.2, size * 0.6);
+            background.fillEllipse(x - size * 0.7, y, size * 1.2, size * 0.6);
         }
         
         // Generate a texture from the graphics
@@ -102,7 +108,7 @@ class GameScene extends Phaser.Scene {
         
         // Clean up the graphics object
         background.destroy();
-        console.log("Created garden background scene as per PRD requirements");
+        console.log("Created garden background scene with 70-degree view");
     }
     
     createTreeAndBasket() {
@@ -139,6 +145,10 @@ class GameScene extends Phaser.Scene {
         // Add physics static body to basket for collision detection
         this.physics.world.enable(this.basket);
         this.basket.body.setImmovable(true);
+        
+        // Set appropriate body size for the basket
+        this.basket.body.setSize(60, 50);
+        this.basket.body.setOffset(10, 15);
     }
     
     createInputControls() {
@@ -189,41 +199,39 @@ class GameScene extends Phaser.Scene {
         
         // Create new apple at the spawn point
         this.apple = new Apple(this, spawnPoint.x, spawnPoint.y);
-        this.apple.moveSpeed = this.gameConstants.APPLE_MOVE_SPEED;
         
-        // Add gravity to apple
-        this.apple.body.setGravityY(100);
-        
-        // Activate the apple for control
+        // Activate the apple for interaction
         this.apple.activate();
         
         // Play apple drop sound
         this.sound.play('drop', { volume: 0.5 });
         
-        // Set up collision with basket
+        // Set up collision with squirrel
         this.physics.add.overlap(
-            this.apple, 
-            this.basket,
-            this.collectApple,
+            this.apple,
+            this.squirrel,
+            this.applePickup,
             null,
             this
         );
         
-        // Spawn snake after a short delay
-        this.time.delayedCall(500, this.spawnSnake, [], this);
+        // Spawn predators after a short delay
+        this.time.delayedCall(2000, this.spawnPredators, [], this);
     }
     
-    spawnSnake() {
+    spawnPredators() {
         if (!this.apple || !this.apple.active || !this.isGameActive) return;
         
-        // Calculate a position off-screen to spawn the snake
+        // Calculate positions off-screen to spawn the snake and worm
         const { width, height } = this.cameras.main;
-        let snakeX, snakeY;
+        let snakeX, snakeY, wormX, wormY;
         
-        // Randomly choose a side to spawn from
-        const side = Phaser.Math.Between(0, 3); // 0: top, 1: right, 2: bottom, 3: left
+        // Randomly choose sides to spawn predators from
+        const snakeSide = Phaser.Math.Between(0, 3); // 0: top, 1: right, 2: bottom, 3: left
+        const wormSide = (snakeSide + 2) % 4; // Opposite side from snake
         
-        switch (side) {
+        // Position snake
+        switch (snakeSide) {
             case 0: // Top
                 snakeX = Phaser.Math.Between(0, width);
                 snakeY = -30;
@@ -242,6 +250,26 @@ class GameScene extends Phaser.Scene {
                 break;
         }
         
+        // Position worm
+        switch (wormSide) {
+            case 0: // Top
+                wormX = Phaser.Math.Between(0, width);
+                wormY = -30;
+                break;
+            case 1: // Right
+                wormX = width + 30;
+                wormY = Phaser.Math.Between(0, height);
+                break;
+            case 2: // Bottom
+                wormX = Phaser.Math.Between(0, width);
+                wormY = height + 30;
+                break;
+            case 3: // Left
+                wormX = -30;
+                wormY = Phaser.Math.Between(0, height);
+                break;
+        }
+        
         // Create snake
         this.snake = new Snake(this, snakeX, snakeY);
         
@@ -249,74 +277,151 @@ class GameScene extends Phaser.Scene {
         this.snake.moveSpeed = this.snakeProperties.moveSpeed;
         this.snake.setSegmentCount(this.snakeProperties.segmentCount);
         
-        // Set snake target to apple
-        this.snake.setTarget(this.apple);
+        // Create worm
+        this.worm = new Worm(this, wormX, wormY);
         
-        // Play snake sound
+        // Initially target the apple
+        const target = this.apple;
+        this.snake.setTarget(target);
+        this.worm.setTarget(target);
+        
+        // Play predator sounds
         this.sound.play('snake', { volume: 0.3 });
         
-        // Add collision between snake and apple - fixed to use proper callback binding
+        // Set up collision between predators and squirrel
         this.physics.add.overlap(
-            this.snake,
-            this.apple,
-            this.snakeEatApple,
+            this.squirrel,
+            [this.snake, this.worm],
+            this.predatorCatchSquirrel,
             null,
+            this
+        );
+        
+        // Set up collision between basket and squirrel
+        this.physics.add.overlap(
+            this.squirrel,
+            this.basket,
+            this.deliverApple,
+            function(squirrel) { 
+                // Only trigger if squirrel is carrying an apple
+                return squirrel.hasApple;
+            },
             this
         );
     }
     
-    collectApple(apple, basket) {
-        // Deactivate apple
-        apple.deactivate();
+    applePickup(apple, squirrel) {
+        // Only if apple is active and squirrel is not already carrying one
+        if (!apple.isActive || squirrel.hasApple) return;
+        
+        // Squirrel picks up the apple
+        squirrel.pickupApple();
+        apple.pickup(squirrel);
+        
+        // Play collect sound
+        this.sound.play('collect', { volume: 0.6 });
+        
+        // Show pickup animation
+        this.showPickupAnimation(apple.x, apple.y);
+        
+        // Change predator targets to chase the squirrel
+        if (this.snake) {
+            this.snake.setTarget(squirrel);
+        }
+        if (this.worm) {
+            this.worm.setTarget(squirrel);
+        }
+    }
+    
+    deliverApple(squirrel, basket) {
+        // Squirrel delivers apple to basket
         
         // Increase score
         this.score++;
         this.scoreText.setText(`Score: ${this.score}`);
         
         // Play collect sound
-        this.sound.play('collect', { volume: 0.6 });
+        this.sound.play('collect', { volume: 0.8 });
         
-        // Show collection animation
-        this.showCollectionAnimation(apple.x, apple.y);
+        // Show delivery animation
+        this.showDeliveryAnimation(basket.x, basket.y);
         
-        // Remove apple and snake
+        // Squirrel drops the apple (it's delivered to basket)
+        squirrel.dropApple();
+        
+        // Remove apple and predators
         this.cleanupCurrentRound();
         
         // Check if game should continue
         this.checkGameStatus();
     }
     
-    snakeEatApple(snake, apple) {
-        // Make sure apple is active
-        if (!apple.isActive) return;
+    predatorCatchSquirrel(squirrel, predator) {
+        // Only care if squirrel has apple
+        if (!squirrel.hasApple) return;
         
-        // Deactivate apple
-        apple.deactivate();
+        // Determine which predator caught the squirrel
+        let predatorType;
+        if (predator === this.snake) {
+            predatorType = 'snake';
+            // Snake grows longer
+            predator.growLonger();
+            
+            // Store snake properties for next round
+            this.snakeProperties.segmentCount = predator.getSegmentCount();
+            this.snakeProperties.moveSpeed = predator.moveSpeed;
+            this.snakeProperties.applesEaten++;
+        } else if (predator === this.worm) {
+            predatorType = 'worm';
+        }
+        
+        // Make the squirrel drop the apple
+        squirrel.dropApple();
+        if (this.apple) this.apple.drop();
         
         // Play eat sound
         this.sound.play('eat', { volume: 0.6 });
         
-        // Snake grows longer
-        snake.growLonger();
-        
-        // Persist snake's segment count and speed
-        this.snakeProperties.segmentCount = snake.getSegmentCount();
-        this.snakeProperties.moveSpeed = snake.moveSpeed;
-        this.snakeProperties.applesEaten++;
-        
         // Show eat animation
-        this.showEatAnimation(apple.x, apple.y);
+        this.showPredatorCaughtAnimation(predator.x, predator.y, predatorType);
         
-        // Remove apple and snake
-        this.cleanupCurrentRound();
-        
-        // Check if game should continue
-        this.checkGameStatus();
+        // Remove apple and predators after a delay
+        this.time.delayedCall(1500, () => {
+            this.cleanupCurrentRound();
+            
+            // Check if game should continue
+            this.checkGameStatus();
+        });
     }
     
-    showCollectionAnimation(x, y) {
+    showPickupAnimation(x, y) {
         try {
-            // Create particle effect for apple collection
+            // Create particle effect for apple pickup
+            const particles = this.add.particles('apple');
+            
+            // Particle emitter for sparkles
+            const emitter = particles.createEmitter({
+                speed: 50,
+                scale: { start: 0.1, end: 0 },
+                blendMode: 'ADD',
+                lifespan: 300
+            });
+            
+            // Emit particles at pickup point
+            emitter.explode(8, x, y);
+            
+            // Clean up particles after animation
+            this.time.delayedCall(500, () => {
+                particles.destroy();
+            });
+        } catch (e) {
+            console.error('Error showing pickup animation:', e);
+        }
+    }
+    
+    showDeliveryAnimation(x, y) {
+        try {
+            // Create particle effect for apple delivery
             let particles;
             
             // Check if we can use the apple texture or need a fallback
@@ -343,12 +448,12 @@ class GameScene extends Phaser.Scene {
                 lifespan: 500
             });
             
-            // Emit particles at collection point
-            emitter.explode(10, x, y);
+            // Emit particles at delivery point
+            emitter.explode(12, x, y);
             
             // Add score text that floats up
             const scorePopup = this.add.text(x, y, '+1', {
-                fontSize: '20px',
+                fontSize: '24px',
                 color: '#FFFFFF',
                 stroke: '#000000',
                 strokeThickness: 3
@@ -357,7 +462,7 @@ class GameScene extends Phaser.Scene {
             // Animate the score text
             this.tweens.add({
                 targets: scorePopup,
-                y: y - 50,
+                y: y - 60,
                 alpha: 0,
                 duration: 1000,
                 onComplete: () => {
@@ -366,10 +471,10 @@ class GameScene extends Phaser.Scene {
                 }
             });
         } catch (e) {
-            console.error('Error showing collection animation:', e);
+            console.error('Error showing delivery animation:', e);
             // Add simpler score popup that doesn't rely on particles
             const scorePopup = this.add.text(x, y, '+1', {
-                fontSize: '20px',
+                fontSize: '24px',
                 color: '#FFFFFF',
                 stroke: '#000000',
                 strokeThickness: 3
@@ -377,7 +482,7 @@ class GameScene extends Phaser.Scene {
             
             this.tweens.add({
                 targets: scorePopup,
-                y: y - 50,
+                y: y - 60,
                 alpha: 0,
                 duration: 1000,
                 onComplete: () => scorePopup.destroy()
@@ -385,7 +490,7 @@ class GameScene extends Phaser.Scene {
         }
     }
     
-    showEatAnimation(x, y) {
+    showPredatorCaughtAnimation(x, y, predatorType) {
         try {
             // Similar approach with error handling
             let particles;
@@ -408,36 +513,57 @@ class GameScene extends Phaser.Scene {
             
             // Particle emitter for apple bits
             const emitter = particles.createEmitter({
-                speed: 50,
+                speed: 80,
                 scale: { start: 0.2, end: 0 },
                 blendMode: 'NORMAL',
                 tint: 0xFF0000,
-                lifespan: 300
+                lifespan: 500
             });
             
             // Emit particles at eat point
-            emitter.explode(8, x, y);
+            emitter.explode(10, x, y);
             
-            // Clean up particles after animation
-            this.time.delayedCall(500, () => {
-                particles.destroy();
+            // Add text indicating what happened
+            const message = predatorType === 'snake' ? 'Snake stole apple!' : 'Worm stole apple!';
+            const popup = this.add.text(x, y - 20, message, {
+                fontSize: '18px',
+                color: '#FF0000',
+                stroke: '#000000',
+                strokeThickness: 3
+            }).setOrigin(0.5);
+            
+            // Animate the text
+            this.tweens.add({
+                targets: popup,
+                y: y - 60,
+                alpha: 0,
+                duration: 1200,
+                onComplete: () => {
+                    popup.destroy();
+                    particles.destroy();
+                }
             });
         } catch (e) {
-            console.error('Error showing eat animation:', e);
-            // No fallback animation necessary for eat effect
+            console.error('Error showing predator caught animation:', e);
         }
     }
     
     cleanupCurrentRound() {
-        // Destroy apple and snake
+        // Destroy apple if it exists
         if (this.apple) {
             this.apple.destroy();
             this.apple = null;
         }
         
+        // Destroy predators
         if (this.snake) {
             this.snake.destroy();
             this.snake = null;
+        }
+        
+        if (this.worm) {
+            this.worm.destroy();
+            this.worm = null;
         }
         
         // Wait a brief moment before spawning a new apple
@@ -458,15 +584,43 @@ class GameScene extends Phaser.Scene {
         }
     }
     
-    update() {
-        // Handle apple movement using keyboard
-        if (this.apple && this.apple.isActive) {
-            this.apple.handleInput(this.cursors);
+    update(time, delta) {
+        // Handle squirrel movement using keyboard
+        if (this.squirrel) {
+            this.squirrel.handleInput(this.cursors);
+            this.squirrel.update();
         }
         
-        // Update snake movement
+        // Update apple if active
+        if (this.apple && this.apple.isActive) {
+            this.apple.update();
+        }
+        
+        // Update predators
         if (this.snake) {
-            this.snake.update();
+            this.snake.update(time);
+        }
+        
+        if (this.worm) {
+            this.worm.update(time);
+        }
+        
+        // If squirrel has apple, update predator targets
+        if (this.squirrel && this.squirrel.hasApple) {
+            if (this.snake) {
+                this.snake.setTarget(this.squirrel);
+            }
+            if (this.worm) {
+                this.worm.setTarget(this.squirrel);
+            }
+        } else if (this.apple && this.apple.isActive) {
+            // If apple is on ground, target it
+            if (this.snake) {
+                this.snake.setTarget(this.apple);
+            }
+            if (this.worm) {
+                this.worm.setTarget(this.apple);
+            }
         }
     }
 }

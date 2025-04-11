@@ -1,49 +1,37 @@
 // Basket.js - Represents the basket that catches apples
-class Basket extends Phaser.GameObjects.Container {
+class Basket extends Phaser.GameObjects.Sprite {
     constructor(scene, x, y) {
-        super(scene, x, y);
+        super(scene, x, y, 'basket');
         
         this.scene = scene;
-        this.basketWidth = 80;
-        this.basketHeight = 50;
-        
-        // Create visual representation
-        this.createVisuals();
         
         // Add to scene
         scene.add.existing(this);
         
+        // Set display size
+        this.setDisplaySize(80, 80);
+        
+        // Set depth to render at the correct layer
+        this.setDepth(2);
+        
         // Add physics
         scene.physics.world.enable(this);
+        this.body.setImmovable(true);
         
-        // Set physics body size
-        this.body.setSize(this.basketWidth, this.basketHeight/2);
-        this.body.setOffset(-this.basketWidth/2, -this.basketHeight/2);
-    }
-    
-    createVisuals() {
-        // Create basket body (brown arc)
-        const basketBody = this.scene.add.graphics();
-        basketBody.fillStyle(0x8B4513, 1);
-        basketBody.lineStyle(3, 0x654321, 1);
+        // Set appropriate body size
+        this.body.setSize(60, 50);
+        this.body.setOffset(10, 15);
         
-        // Draw a semi-circle for the basket
-        basketBody.beginPath();
-        basketBody.arc(0, 0, this.basketWidth/2, 0, Math.PI, false);
-        basketBody.strokePath();
-        basketBody.fillPath();
-        
-        // Add horizontal line at the top
-        basketBody.beginPath();
-        basketBody.moveTo(-this.basketWidth/2, 0);
-        basketBody.lineTo(this.basketWidth/2, 0);
-        basketBody.strokePath();
-        
-        // Add this to the container
-        this.add(basketBody);
-        
-        // Set size for container
-        this.setSize(this.basketWidth, this.basketHeight);
+        // Add a subtle animation to make the basket more visually interesting
+        this.scene.tweens.add({
+            targets: this,
+            scaleX: 1.03,
+            scaleY: 1.03,
+            duration: 2000,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut'
+        });
     }
 }
 

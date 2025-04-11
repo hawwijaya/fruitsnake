@@ -1,4 +1,4 @@
-// Apple.js - Represents the player-controlled apple
+// Apple.js - Represents the fruit that drops from trees and can be collected
 class Apple extends Phaser.Physics.Arcade.Sprite {
     constructor(scene, x, y) {
         super(scene, x, y, 'apple');
@@ -11,80 +11,129 @@ class Apple extends Phaser.Physics.Arcade.Sprite {
         
         // Set up physics body
         this.body.setCircle(15); // Assuming apple radius of 15px
-        this.body.setBounce(0.3);
+        this.body.setBounce(0.2);
         this.body.setCollideWorldBounds(true);
-        this.body.setDrag(50, 50);
+        this.body.setDrag(90, 90);
         
         // Initialize variables
-        this.moveSpeed = 200; // Will be defined by game constants later
         this.isActive = false;
+        this.isPickedUp = false;
+        this.carrier = null; // Reference to object carrying this apple (squirrel)
         
-        // Create visual if texture is not available
-        if (!scene.textures.exists('apple')) {
-            this.createVisual();
-        }
+        // Set size based on the texture
+        this.setDisplaySize(32, 32);
         
-        // Set depth to ensure apple renders above other game objects
-        this.setDepth(10);
+        // Set origin to center
+        this.setOrigin(0.5);
+        
+        // Add drop shadow
+        this.createDropShadow();
+        
+        // Set depth to ensure apple renders at appropriate layer
+        this.setDepth(15);
+        
+        // Add a simple bobbing animation to make it more visually interesting
+        this.scene.tweens.add({
+            targets: this,
+            y: '+=4',
+            duration: 1200,
+            ease: 'Sine.easeInOut',
+            yoyo: true,
+            repeat: -1
+        });
     }
     
-    createVisual() {
-        // Create a graphic for the apple
-        const graphics = this.scene.make.graphics();
-        
-        // Draw the apple (red circle)
-        graphics.fillStyle(0xFF0000, 1);
-        graphics.fillCircle(16, 16, 15);
-        
-        // Add a little highlight
-        graphics.fillStyle(0xFFFFFF, 0.5);
-        graphics.fillCircle(10, 10, 5);
-        
-        // Add stem on top
-        graphics.fillStyle(0x654321, 1);
-        graphics.fillRect(16, 1, 3, 7);
-        
-        // Create a texture from the graphics
-        graphics.generateTexture('apple', 32, 32);
-        graphics.destroy();
-        
-        // Apply the texture to this sprite
-        this.setTexture('apple');
+    createDropShadow() {
+        // Create shadow beneath the apple
+        this.shadow = this.scene.add.ellipse(this.x, this.y + 12, 24, 12, 0x000000, 0.3);
+        this.shadow.setDepth(5);
     }
     
     activate() {
         this.isActive = true;
-        this.body.setAllowGravity(true);
+        this.body.setAllowGravity(false); // No gravity in top-down view
+        
+        // Play a small drop animation
+        this.scene.tweens.add({
+            targets: this,
+            y: this.y + 20,
+            duration: 500,
+            ease: 'Bounce.easeOut'
+        });
     }
     
     deactivate() {
         this.isActive = false;
         this.body.setVelocity(0, 0);
-        this.body.setAllowGravity(false);
     }
     
-    handleInput(cursors) {
-        if (!this.isActive) return;
+    pickup(carrier) {
+        // Apple gets picked up by carrier (squirrel)
+        this.isPickedUp = true;
+        this.carrier = carrier;
         
-        // Reset acceleration
-        let xAccel = 0;
-        let yAccel = 0;
+        // Make apple follow carrier but become invisible (carrier will show apple)
+        this.visible = false;
+        if (this.shadow) this.shadow.visible = false;
         
-        // Check for keyboard input
-        if (cursors.left.isDown || cursors.keyA.isDown) {
-            xAccel = -this.moveSpeed;
-        } else if (cursors.right.isDown || cursors.keyD.isDown) {
-            xAccel = this.moveSpeed;
+        // Disable physics body while carried
+        this.body.enable = false;
+    }
+    
+    drop() {
+        // Apple gets dropped
+        this.isPickedUp = false;
+        this.carrier = null;
+        
+        // Make apple visible again
+        this.visible = true;
+        if (this.shadow) this.shadow.visible = true;
+        
+        // Re-enable physics
+        this.body.enable = true;
+        
+        // Add small velocity in random direction when dropped
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 50 + Math.random() * 30;
+        this.body.setVelocity(
+            Math.cos(angle) * speed,
+            Math.sin(angle) * speed
+        );
+    }
+    
+    update() {
+        // Update shadow position
+        if (this.shadow) {
+            this.shadow.x = this.x;
+            this.shadow.y = this.y + 12;
         }
         
-        if (cursors.up.isDown || cursors.keyW.isDown) {
-            yAccel = -this.moveSpeed * 0.7; // Less vertical control for game balance
-        } else if (cursors.down.isDown || cursors.keyS.isDown) {
-            yAccel = this.moveSpeed * 0.7;
+        // If picked up, follow the carrier
+        if (this.isPickedUp && this.carrier) {
+            this.x = this.carrier.x;
+            this.y = this.carrier.y;
         }
         
-        // Apply acceleration
-        this.body.setAcceleration(xAccel, yAccel);
+        // Add a small rotation based on movement
+        if (this.body.velocity.length() > 10) {
+            // Rotate slightly based on movement direction
+            const targetRotation = Math.atan2(this.body.velocity.y, this.body.velocity.x);
+            this.rotation = Phaser.Math.Angle.RotateTo(
+                this.rotation,
+                targetRotation,
+                0.1
+            );
+        }
+    }
+    
+    destroy() {
+        // Clean up shadow when apple is destroyed
+        if (this.shadow) {
+            this.shadow.destroy();
+        }
+        
+        // Call parent destroy
+        super.destroy();
     }
 }
 

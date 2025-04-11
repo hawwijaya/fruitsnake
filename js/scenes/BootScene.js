@@ -69,6 +69,9 @@ class BootScene extends Phaser.Scene {
         this.load.image('apple', 'images/apple.png');
         this.load.image('snake', 'images/snake.png');
         this.load.image('basket', 'images/basket.png');
+        this.load.image('squirrel', 'images/squirrel.png');
+        this.load.image('squirrel_with_apple', 'images/squirrel_with_apple.png');
+        this.load.image('worm', 'images/worm.png');
         
         // Sounds - we'll use procedural sounds if these fail
         const sounds = [

@@ -7,6 +7,8 @@ class SvgAssets {
         this.createTreeTexture(scene);
         this.createSnakeTexture(scene);
         this.createBasketTexture(scene);
+        this.createSquirrelTexture(scene);
+        this.createWormTexture(scene);
         
         // Generate procedural sounds
         this.createSoundAssets(scene);
@@ -17,124 +19,257 @@ class SvgAssets {
         // Check if texture already exists
         if (scene.textures.exists('apple')) return;
         
-        // Apple SVG data
-        const svgWidth = 64;
-        const svgHeight = 64;
+        // Apple SVG data - redesigned for top-down perspective
+        const svgWidth = 48;
+        const svgHeight = 48;
         const svg = `
-        <svg width="${svgWidth}" height="${svgHeight}" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-            <!-- Apple stem -->
-            <path d="M32 10 L32 18" stroke="brown" stroke-width="3" />
-            <path d="M32 10 Q38 8 40 14" stroke="brown" stroke-width="2" fill="none"/>
+        <svg width="${svgWidth}" height="${svgHeight}" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <!-- Apple body from top view -->
+            <ellipse cx="24" cy="24" rx="20" ry="16" fill="#D10000" />
             
-            <!-- Apple body -->
-            <path d="M24 20 Q20 14 28 14 Q36 14 40 20 Q54 28 42 48 Q32 60 22 48 Q10 28 24 20" fill="red" />
+            <!-- Apple shadow to show depth -->
+            <ellipse cx="24" cy="28" rx="16" ry="10" fill="rgba(0,0,0,0.2)" />
+            
+            <!-- Apple stem from top view -->
+            <circle cx="24" cy="14" r="2" fill="#5D2906" />
+            
+            <!-- Apple leaf from top view -->
+            <path d="M30 12 Q32 8 28 8 Q24 10 30 12" fill="#159300" />
             
             <!-- Apple highlight -->
-            <ellipse cx="28" cy="28" rx="5" ry="8" fill="rgba(255,255,255,0.3)" transform="rotate(-25 28 28)" />
-            
-            <!-- Apple leaf -->
-            <path d="M32 14 Q38 4 42 12" stroke="none" fill="green" />
+            <ellipse cx="18" cy="18" rx="6" ry="4" fill="rgba(255,255,255,0.2)" transform="rotate(-15 18 18)" />
         </svg>`;
         
         this.svgToTexture(scene, 'apple', svg, svgWidth, svgHeight);
-        console.log("Created apple SVG texture");
+        console.log("Created apple SVG texture for top-down view");
     }
     
-    // Create a tree texture using SVG
+    // Create a tree texture using SVG (top-down perspective)
     static createTreeTexture(scene) {
         // Check if texture already exists
         if (scene.textures.exists('tree')) return;
         
-        const svgWidth = 128;
-        const svgHeight = 160;
+        const svgWidth = 180;
+        const svgHeight = 180;
         const svg = `
-        <svg width="${svgWidth}" height="${svgHeight}" viewBox="0 0 128 160" xmlns="http://www.w3.org/2000/svg">
-            <!-- Tree trunk -->
-            <rect x="54" y="80" width="20" height="80" fill="#8B4513" />
+        <svg width="${svgWidth}" height="${svgHeight}" viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg">
+            <!-- Tree shadow -->
+            <ellipse cx="90" cy="90" rx="80" ry="70" fill="rgba(0,0,0,0.15)" />
             
-            <!-- Tree foliage -->
-            <circle cx="64" cy="80" r="40" fill="#228B22" />
-            <circle cx="40" cy="60" r="25" fill="#228B22" />
-            <circle cx="90" cy="65" r="30" fill="#228B22" />
-            <circle cx="64" cy="40" r="25" fill="#228B22" />
+            <!-- Tree trunk - visible as round center -->
+            <circle cx="90" cy="90" r="20" fill="#8B4513" />
             
-            <!-- Apple positions -->
-            <circle cx="45" cy="70" r="6" fill="red" />
-            <circle cx="80" cy="50" r="6" fill="red" />
-            <circle cx="90" cy="85" r="6" fill="red" />
-            <circle cx="40" cy="40" r="6" fill="red" />
-            <circle cx="64" cy="90" r="6" fill="red" />
+            <!-- Tree foliage from top view - layered circles -->
+            <circle cx="90" cy="90" r="70" fill="#228B22" />
+            <circle cx="65" cy="65" r="25" fill="#2EA12E" />
+            <circle cx="115" cy="65" r="20" fill="#2EA12E" />
+            <circle cx="65" cy="115" r="20" fill="#2EA12E" />
+            <circle cx="115" cy="115" r="23" fill="#2EA12E" />
+            <circle cx="90" cy="60" r="20" fill="#2EA12E" />
+            <circle cx="90" cy="120" r="20" fill="#2EA12E" />
+            <circle cx="50" cy="90" r="15" fill="#2EA12E" />
+            <circle cx="130" cy="90" r="18" fill="#2EA12E" />
+            
+            <!-- Tree texture detail -->
+            <circle cx="78" cy="75" r="8" fill="#196619" />
+            <circle cx="105" cy="82" r="10" fill="#196619" />
+            <circle cx="92" cy="110" r="12" fill="#196619" />
+            <circle cx="70" cy="95" r="7" fill="#196619" />
+            <circle cx="115" cy="100" r="9" fill="#196619" />
         </svg>`;
         
         this.svgToTexture(scene, 'tree', svg, svgWidth, svgHeight);
-        console.log("Created tree SVG texture");
+        console.log("Created tree SVG texture for top-down view");
     }
     
-    // Create a basket texture using SVG
+    // Create a basket texture using SVG (top-down perspective)
     static createBasketTexture(scene) {
         // Check if texture already exists
         if (scene.textures.exists('basket')) return;
         
         const svgWidth = 80;
-        const svgHeight = 60;
+        const svgHeight = 80;
         const svg = `
-        <svg width="${svgWidth}" height="${svgHeight}" viewBox="0 0 80 60" xmlns="http://www.w3.org/2000/svg">
-            <!-- Basket rim -->
-            <path d="M10 20 Q40 10 70 20" stroke="#8B4513" stroke-width="3" fill="none" />
+        <svg width="${svgWidth}" height="${svgHeight}" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+            <!-- Basket shadow -->
+            <ellipse cx="40" cy="45" rx="35" ry="25" fill="rgba(0,0,0,0.15)" />
             
-            <!-- Basket body -->
-            <path d="M10 20 L15 50 Q40 60 65 50 L70 20" fill="#D2B48C" />
+            <!-- Basket from top view - oval shape -->
+            <ellipse cx="40" cy="40" rx="30" ry="25" fill="#D2B48C" />
             
-            <!-- Basket weaving -->
-            <path d="M10 25 L70 25" stroke="#8B4513" stroke-width="1.5" />
-            <path d="M10 32 L70 32" stroke="#8B4513" stroke-width="1.5" />
-            <path d="M10 39 L70 39" stroke="#8B4513" stroke-width="1.5" />
-            <path d="M15 46 L65 46" stroke="#8B4513" stroke-width="1.5" />
+            <!-- Inner basket area -->
+            <ellipse cx="40" cy="40" rx="22" ry="18" fill="#E8DCCA" />
             
-            <!-- Vertical weaving -->
-            <path d="M20 20 L22 50" stroke="#8B4513" stroke-width="1.5" />
-            <path d="M30 16 L32 52" stroke="#8B4513" stroke-width="1.5" />
-            <path d="M40 15 L40 55" stroke="#8B4513" stroke-width="1.5" />
-            <path d="M50 16 L48 52" stroke="#8B4513" stroke-width="1.5" />
-            <path d="M60 20 L58 50" stroke="#8B4513" stroke-width="1.5" />
+            <!-- Basket weave texture - concentric ellipses -->
+            <ellipse cx="40" cy="40" rx="30" ry="25" fill="none" stroke="#8B4513" stroke-width="1.5" />
+            <ellipse cx="40" cy="40" rx="26" ry="21" fill="none" stroke="#8B4513" stroke-width="1" />
+            <ellipse cx="40" cy="40" rx="22" ry="18" fill="none" stroke="#8B4513" stroke-width="1" />
+            
+            <!-- Cross-weave pattern -->
+            <line x1="10" y1="40" x2="70" y2="40" stroke="#8B4513" stroke-width="1" />
+            <line x1="40" y1="15" x2="40" y2="65" stroke="#8B4513" stroke-width="1" />
+            <line x1="20" y1="25" x2="60" y2="55" stroke="#8B4513" stroke-width="1" />
+            <line x1="20" y1="55" x2="60" y2="25" stroke="#8B4513" stroke-width="1" />
         </svg>`;
         
         this.svgToTexture(scene, 'basket', svg, svgWidth, svgHeight);
-        console.log("Created basket SVG texture");
+        console.log("Created basket SVG texture for top-down view");
     }
     
-    // Create a snake texture using SVG
+    // Create a snake texture using SVG (top-down perspective)
     static createSnakeTexture(scene) {
         // Check if texture already exists
         if (scene.textures.exists('snake')) return;
         
         const svgWidth = 64;
-        const svgHeight = 32;
+        const svgHeight = 64;
         const svg = `
-        <svg width="${svgWidth}" height="${svgHeight}" viewBox="0 0 64 32" xmlns="http://www.w3.org/2000/svg">
-            <!-- Snake head -->
-            <circle cx="48" cy="16" r="12" fill="#008800" />
+        <svg width="${svgWidth}" height="${svgHeight}" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+            <!-- Snake head viewed from above -->
+            <ellipse cx="48" cy="32" rx="12" ry="10" fill="#008800" />
             
-            <!-- Eyes -->
-            <circle cx="52" cy="12" r="3" fill="white" />
-            <circle cx="52" cy="20" r="3" fill="white" />
-            <circle cx="52" cy="12" r="1.5" fill="black" />
-            <circle cx="52" cy="20" r="1.5" fill="black" />
+            <!-- Snake shadow -->
+            <ellipse cx="46" cy="38" rx="10" ry="6" fill="rgba(0,0,0,0.15)" />
             
-            <!-- Forked tongue -->
-            <path d="M60 16 L64 12 M60 16 L64 20" stroke="#FF0066" stroke-width="2" />
-            <rect x="56" y="15" width="4" height="2" fill="#FF0066" />
+            <!-- Eyes from above - white with black pupils -->
+            <circle cx="52" cy="28" r="3" fill="white" />
+            <circle cx="52" cy="36" r="3" fill="white" />
+            <circle cx="52" cy="28" r="1.5" fill="black" />
+            <circle cx="52" cy="36" r="1.5" fill="black" />
             
-            <!-- Snake body -->
-            <circle cx="30" cy="16" r="10" fill="#00AA00" />
-            <circle cx="14" cy="16" r="10" fill="#00AA00" />
+            <!-- Forked tongue seen from above -->
+            <path d="M60 32 L64 29 M60 32 L64 35" stroke="#FF0066" stroke-width="2" />
+            
+            <!-- Snake body segments, viewed from above with dimension -->
+            <ellipse cx="30" cy="32" rx="10" ry="8" fill="#00AA00" />
+            <ellipse cx="14" cy="32" rx="10" ry="8" fill="#00AA00" />
+            
+            <!-- Scales pattern -->
+            <path d="M18 28 L22 27 L26 28 M34 28 L38 27 L42 28" stroke="#006600" stroke-width="1" fill="none" />
+            <path d="M18 36 L22 37 L26 36 M34 36 L38 37 L42 36" stroke="#006600" stroke-width="1" fill="none" />
         </svg>`;
         
         this.svgToTexture(scene, 'snake', svg, svgWidth, svgHeight);
-        console.log("Created snake SVG texture");
+        console.log("Created snake SVG texture for top-down view");
     }
     
-    // Create a background texture using SVG
+    // Create a squirrel texture using SVG (top-down perspective)
+    static createSquirrelTexture(scene) {
+        // Check if texture already exists
+        if (scene.textures.exists('squirrel')) return;
+        
+        const svgWidth = 48;
+        const svgHeight = 64;
+        const svg = `
+        <svg width="${svgWidth}" height="${svgHeight}" viewBox="0 0 48 64" xmlns="http://www.w3.org/2000/svg">
+            <!-- Squirrel body from top view -->
+            <ellipse cx="24" cy="32" rx="12" ry="16" fill="#8B4513" />
+            
+            <!-- Shadow -->
+            <ellipse cx="24" cy="37" rx="10" ry="8" fill="rgba(0,0,0,0.2)" />
+            
+            <!-- Squirrel head -->
+            <circle cx="24" cy="18" r="8" fill="#A0522D" />
+            
+            <!-- Ears -->
+            <circle cx="20" cy="12" r="4" fill="#8B4513" />
+            <circle cx="28" cy="12" r="4" fill="#8B4513" />
+            
+            <!-- Eyes -->
+            <circle cx="22" cy="16" r="1.5" fill="#000000" />
+            <circle cx="26" cy="16" r="1.5" fill="#000000" />
+            
+            <!-- Nose -->
+            <circle cx="24" cy="18" r="1" fill="#000000" />
+            
+            <!-- Tail from top view - curved shape -->
+            <path d="M24 48 C 38 54, 44 42, 38 36" fill="#8B4513" stroke="#A0522D" stroke-width="1" />
+            
+            <!-- Tiny arms/paws from top view - small ovals -->
+            <ellipse cx="18" cy="28" rx="3" ry="2" fill="#A0522D" />
+            <ellipse cx="30" cy="28" rx="3" ry="2" fill="#A0522D" />
+            
+            <!-- Tiny legs/feet from top view - small ovals -->
+            <ellipse cx="18" cy="42" rx="3" ry="2" fill="#A0522D" />
+            <ellipse cx="30" cy="42" rx="3" ry="2" fill="#A0522D" />
+        </svg>`;
+        
+        this.svgToTexture(scene, 'squirrel', svg, svgWidth, svgHeight);
+        console.log("Created squirrel SVG texture for top-down view");
+        
+        // Create squirrel with apple texture
+        const squirrelWithAppleSvg = `
+        <svg width="${svgWidth}" height="${svgHeight}" viewBox="0 0 48 64" xmlns="http://www.w3.org/2000/svg">
+            <!-- Squirrel body from top view -->
+            <ellipse cx="24" cy="32" rx="12" ry="16" fill="#8B4513" />
+            
+            <!-- Shadow -->
+            <ellipse cx="24" cy="37" rx="10" ry="8" fill="rgba(0,0,0,0.2)" />
+            
+            <!-- Squirrel head -->
+            <circle cx="24" cy="18" r="8" fill="#A0522D" />
+            
+            <!-- Ears -->
+            <circle cx="20" cy="12" r="4" fill="#8B4513" />
+            <circle cx="28" cy="12" r="4" fill="#8B4513" />
+            
+            <!-- Eyes -->
+            <circle cx="22" cy="16" r="1.5" fill="#000000" />
+            <circle cx="26" cy="16" r="1.5" fill="#000000" />
+            
+            <!-- Nose -->
+            <circle cx="24" cy="18" r="1" fill="#000000" />
+            
+            <!-- Tail from top view - curved shape -->
+            <path d="M24 48 C 38 54, 44 42, 38 36" fill="#8B4513" stroke="#A0522D" stroke-width="1" />
+            
+            <!-- Tiny arms/paws from top view - small ovals -->
+            <ellipse cx="18" cy="28" rx="3" ry="2" fill="#A0522D" />
+            <ellipse cx="30" cy="28" rx="3" ry="2" fill="#A0522D" />
+            
+            <!-- Tiny legs/feet from top view - small ovals -->
+            <ellipse cx="18" cy="42" rx="3" ry="2" fill="#A0522D" />
+            <ellipse cx="30" cy="42" rx="3" ry="2" fill="#A0522D" />
+            
+            <!-- Apple held in front of squirrel -->
+            <ellipse cx="24" cy="25" rx="8" ry="7" fill="#D10000" />
+            <circle cx="24" cy="21" r="1" fill="#5D2906" />
+        </svg>`;
+        
+        this.svgToTexture(scene, 'squirrel_with_apple', squirrelWithAppleSvg, svgWidth, svgHeight);
+        console.log("Created squirrel with apple SVG texture");
+    }
+    
+    // Create a worm texture using SVG (top-down perspective)
+    static createWormTexture(scene) {
+        // Check if texture already exists
+        if (scene.textures.exists('worm')) return;
+        
+        const svgWidth = 40;
+        const svgHeight = 24;
+        const svg = `
+        <svg width="${svgWidth}" height="${svgHeight}" viewBox="0 0 40 24" xmlns="http://www.w3.org/2000/svg">
+            <!-- Worm body viewed from above - segmented -->
+            <circle cx="20" cy="12" r="8" fill="#CC7766" />
+            <circle cx="32" cy="12" r="7" fill="#DD9988" />
+            <circle cx="8" cy="12" r="7" fill="#DD9988" />
+            
+            <!-- Worm shadow -->
+            <ellipse cx="20" cy="16" rx="16" ry="4" fill="rgba(0,0,0,0.15)" />
+            
+            <!-- Worm face features -->
+            <circle cx="34" cy="10" r="1" fill="#000000" />
+            <circle cx="34" cy="14" r="1" fill="#000000" />
+            
+            <!-- Worm segments texture -->
+            <line x1="13" y1="12" x2="27" y2="12" stroke="#BB6655" stroke-width="1" />
+        </svg>`;
+        
+        this.svgToTexture(scene, 'worm', svg, svgWidth, svgHeight);
+        console.log("Created worm SVG texture for top-down view");
+    }
+    
+    // Create a background texture using SVG (70-degree angle top-down)
     static createBackgroundTexture(scene) {
         // Check if texture already exists
         if (scene.textures.exists('background')) return;
@@ -143,42 +278,58 @@ class SvgAssets {
         const height = scene.cameras.main.height;
         const svg = `
         <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
-            <!-- Sky gradient -->
+            <!-- Sky color at 70-degree view -->
             <defs>
-                <linearGradient id="skyGradient" x1="0%" y1="0%" x2="0%" y2="70%">
-                    <stop offset="0%" stop-color="#87CEEB" />
-                    <stop offset="100%" stop-color="#ADD8E6" />
+                <linearGradient id="skyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#70B8FF" />
+                    <stop offset="100%" stop-color="#C0E0FF" />
                 </linearGradient>
                 <linearGradient id="grassGradient" x1="0%" y1="0%" x2="0%" y2="100%">
                     <stop offset="0%" stop-color="#66BB66" />
                     <stop offset="100%" stop-color="#458B00" />
                 </linearGradient>
+                <pattern id="grassPattern" patternUnits="userSpaceOnUse" width="40" height="40" patternTransform="scale(0.5)">
+                    <path d="M0 0 L10 0 L8 10 L15 5 L12 15 L20 10 L18 20 L25 15 L23 25 L30 20 L28 30 L40 25 L40 40 L0 40 Z" fill="#529A00" />
+                    <path d="M40 0 L30 0 L32 10 L25 5 L28 15 L20 10 L22 20 L15 15 L17 25 L10 20 L12 30 L0 25 L0 40 L40 40 Z" fill="#5AAB00" />
+                </pattern>
             </defs>
             
-            <!-- Sky -->
-            <rect width="${width}" height="${height * 0.7}" fill="url(#skyGradient)" />
+            <!-- Sky from 70-degree view (less visible) -->
+            <rect width="${width}" height="${height * 0.3}" fill="url(#skyGradient)" />
             
-            <!-- Grass -->
-            <rect y="${height * 0.7}" width="${width}" height="${height * 0.3}" fill="url(#grassGradient)" />
+            <!-- Main grass area from top-down view -->
+            <rect y="${height * 0.3}" width="${width}" height="${height * 0.7}" fill="url(#grassGradient)" />
+            <rect y="${height * 0.3}" width="${width}" height="${height * 0.7}" fill="url(#grassPattern)" opacity="0.5" />
             
-            <!-- Sun -->
-            <circle cx="${width * 0.8}" cy="${height * 0.2}" r="${width * 0.05}" fill="#FFD700" />
-            <circle cx="${width * 0.8}" cy="${height * 0.2}" r="${width * 0.08}" fill="rgba(255, 215, 0, 0.3)" />
+            <!-- Add scattered grass tufts visible from above -->
+            ${Array.from({length: 200}, (_, i) => {
+                const x = Math.random() * width;
+                const y = height * 0.3 + Math.random() * (height * 0.7);
+                const size = 2 + Math.random() * 4;
+                return `<circle cx="${x}" cy="${y}" r="${size}" fill="#44AA44" opacity="${0.3 + Math.random() * 0.4}" />`;
+            }).join('')}
             
-            <!-- Clouds -->
-            <g opacity="0.8" fill="white">
-                <circle cx="${width * 0.2}" cy="${height * 0.25}" r="${width * 0.04}" />
-                <circle cx="${width * 0.26}" cy="${height * 0.24}" r="${width * 0.05}" />
-                <circle cx="${width * 0.17}" cy="${height * 0.24}" r="${width * 0.03}" />
-                
-                <circle cx="${width * 0.6}" cy="${height * 0.15}" r="${width * 0.04}" />
-                <circle cx="${width * 0.65}" cy="${height * 0.14}" r="${width * 0.05}" />
-                <circle cx="${width * 0.55}" cy="${height * 0.16}" r="${width * 0.04}" />
-            </g>
+            <!-- Add some small stones for texture -->
+            ${Array.from({length: 30}, (_, i) => {
+                const x = Math.random() * width;
+                const y = height * 0.3 + Math.random() * (height * 0.7);
+                const size = 3 + Math.random() * 5;
+                return `<circle cx="${x}" cy="${y}" r="${size}" fill="#BBBBBB" opacity="${0.3 + Math.random() * 0.3}" />`;
+            }).join('')}
+            
+            <!-- Add a few flowers -->
+            ${Array.from({length: 15}, (_, i) => {
+                const x = Math.random() * width;
+                const y = height * 0.3 + Math.random() * (height * 0.7);
+                const color = ['#FFFF00', '#FFFFFF', '#FF99FF'][Math.floor(Math.random() * 3)];
+                return `
+                <circle cx="${x}" cy="${y}" r="3" fill="${color}" />
+                <circle cx="${x}" cy="${y}" r="1" fill="#FFCC00" />`;
+            }).join('')}
         </svg>`;
         
         this.svgToTexture(scene, 'background', svg, width, height);
-        console.log("Created background SVG texture");
+        console.log("Created background SVG texture for 70-degree top-down view");
     }
     
     // Helper method to convert SVG to a texture
