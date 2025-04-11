@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phaser Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #2c3e50;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        #game-container {
+            border: 2px solid white;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container"></div>
+
+    <script>
+        // Wait for DOM to load
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                // Check if Phaser is available
+                if (typeof Phaser === 'undefined') {
+                    document.body.innerHTML = '<h1>Error: Phaser is not loaded</h1>';
+                    return;
+                }
+
+                // Display Phaser version info
+                console.log("Phaser version:", Phaser.VERSION);
+                
+                // Create a simple game
+                const config = {
+                    type: Phaser.AUTO,
+                    width: 800,
+                    height: 600,
+                    backgroundColor: '#1abc9c',
+                    parent: 'game-container',
+                    scene: {
+                        create: create
+                    }
+                };
+
+                // Create the game
+                const game = new Phaser.Game(config);
+
+                // Simple scene creation
+                function create() {
+                    const text = this.add.text(400, 300, 'Phaser is working!', { 
+                        fontSize: '32px', 
+                        fill: '#ffffff',
+                        stroke: '#000000',
+                        strokeThickness: 4
+                    });
+                    text.setOrigin(0.5);
+
+                    const version = this.add.text(400, 350, 'Phaser v' + Phaser.VERSION, {
+                        fontSize: '16px',
+                        fill: '#ffffff'
+                    });
+                    version.setOrigin(0.5);
+                    
+                    // Draw a simple shape
+                    const graphics = this.add.graphics();
+                    graphics.fillStyle(0xff0000, 1);
+                    graphics.fillCircle(400, 200, 60);
+
+                    // Create an interactive element
+                    const button = this.add.rectangle(400, 450, 200, 50, 0x3498db);
+                    button.setInteractive();
+                    button.on('pointerdown', function() {
+                        graphics.clear();
+                        graphics.fillStyle(0x00ff00, 1);
+                        graphics.fillCircle(400, 200, 60);
+                    });
+                    button.on('pointerup', function() {
+                        graphics.clear();
+                        graphics.fillStyle(0xff0000, 1);
+                        graphics.fillCircle(400, 200, 60);
+                    });
+                    
+                    const buttonText = this.add.text(400, 450, 'Click Me!', {
+                        fontSize: '20px',
+                        fill: '#ffffff'
+                    });
+                    buttonText.setOrigin(0.5);
+                }
+            }
+            catch(error) {
+                // Show any errors on screen
+                document.body.innerHTML = '<h1>Error: ' + error.message + '</h1>';
+                console.error(error);
+            }
+        });
+    </script>
+</body>
+</html>

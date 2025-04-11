@@ -1,0 +1,25 @@
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #333; /* Dark background for surrounding area */
+    overflow: hidden; /* Prevent scroll bars */
+    font-family: Arial, Helvetica, sans-serif;
+    display: flex; /* Center game container */
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Full viewport height */
+}
+
+#game-container {
+    /* Container for the canvas */
+    /* border: 2px solid white; /* Optional: border around the game */
+    /* Width and height are controlled by Phaser config */
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5); /* Optional shadow effect */
+}
+
+canvas {
+    /* Ensure canvas is block level to prevent extra space */
+    display: block; 
+    /* max-width: 100%; */ /* Let Phaser handle scaling if needed */
+    /* max-height: 100%; */
+}

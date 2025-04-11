@@ -1,0 +1,42 @@
+Product Requirements Document: Fruit Snake Game
+Introduction and Overview
+Fruit Snake is a web-based game where players navigate apples from a tree to a basket while avoiding snakes. The game features colorful graphics, engaging sound effects, and increasing difficulty as the player progresses.
+
+Technical Requirements
+Technology Stack
+I recommend using JavaScript with the Phaser.js framework for this game. Phaser is specifically designed for 2D web games and provides built-in physics, animation, and sound capabilities.
+
+Visual Requirements
+Minimum 256 color palette (8-bit color depth)
+Responsive design to work on various screen sizes
+Smooth animations for apple dropping, snake movement
+Clear visual distinction between game elements (tree, apples, snake, basket)
+Game Mechanics
+Game Setup
+A garden scene with grass as the background
+An apple tree and a basket are randomly positioned on screen
+The tree and basket must be at least 75% of the screen size apart
+Each game starts with 10 apples available
+Core Gameplay
+An apple drops from the tree near the trunk
+The player uses keyboard movement keys (arrows/WASD) to navigate the apple
+A snake spawns and tries to eat the apple (AI-controlled)
+The snake moves slightly slower than the maximum apple speed
+If the apple reaches the basket, the player scores a point
+If the snake eats the apple, it grows longer
+A new apple appears when the previous one is either eaten or enters the basket
+The game ends when all 10 apples are used (either collected or eaten)
+Sound Effects
+Apple dropping sound
+Apple collection (basket) sound
+Snake movement sound
+Snake eating apple sound
+Game over sound
+Background ambient garden sounds
+Game Flow
+Start screen with game title and "Start" button
+Gameplay screen showing:
+Current score (apples collected)
+Apples remaining
+Game area with tree, basket, apple, and snake
+Game over screen showing final score and "Play Again" button
